@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocuFlow — Production Document Manipulation Platform</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Processing Engines -->
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 flex flex-col antialiased">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-50 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
+    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center gap-2.5">
+        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-white shadow-sm ring-1 ring-slate-900/10">
+          <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="font-bold text-lg tracking-tight text-slate-900">DocuFlow</span>
+          <span class="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 border border-indigo-200">PRO ENGINE v1.5</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="hidden sm:flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
+          <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          Zero Storage Retention
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 space-y-10 pb-20">
+    <!-- Hero Banner -->
+    <section class="border-b border-slate-200 bg-white py-10">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
+        <div class="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3.5 py-1 text-xs font-semibold text-indigo-700">
+          <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          Universal Cross-Device Blob & Binary Stream Downloads
+        </div>
+        <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+          Document Manipulation & Conversion Platform
+        </h1>
+        <p class="text-sm text-slate-500 max-w-2xl mx-auto leading-relaxed">
+          Compress, merge, sequence image queues, and convert files instantly with direct local device download support.
+        </p>
+
+        <!-- Search Bar -->
+        <div class="relative mx-auto max-w-md pt-2">
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Search utility (e.g. compress, merge, image to pdf)..."
+            oninput="filterTools()"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-xs text-slate-900 placeholder-slate-400 focus:border-indigo-600 focus:bg-white focus:outline-none shadow-sm"
+          />
+          <svg class="absolute left-3.5 top-5 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- Content Area -->
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
+      <!-- Tabs -->
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex gap-2">
+          <button onclick="setCategory('all')" id="tab-all" class="category-tab rounded-lg px-3.5 py-1.5 text-xs font-semibold bg-slate-900 text-white shadow-sm">All Utilities</button>
+          <button onclick="setCategory('pdf')" id="tab-pdf" class="category-tab rounded-lg px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200/60">PDF Toolkit</button>
+          <button onclick="setCategory('converter')" id="tab-converter" class="category-tab rounded-lg px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200/60">Office Converters</button>
+          <button onclick="setCategory('image')" id="tab-image" class="category-tab rounded-lg px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200/60">Image Tools</button>
+        </div>
+      </div>
+
+      <!-- Tools Grid -->
+      <div id="toolsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div onclick="selectTool('compress')" data-cat="pdf" class="tool-card group relative flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 hover:border-slate-300 shadow-sm cursor-pointer">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-50 text-slate-700">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+              </div>
+              <span class="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700">POPULAR</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 group-hover:text-indigo-600">Compress PDF</h3>
+              <p class="text-xs text-slate-500 mt-1">Reduce PDF file size with stream object compression.</p>
+            </div>
+          </div>
+        </div>
+
+        <div onclick="selectTool('merge')" data-cat="pdf" class="tool-card group relative flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 hover:border-slate-300 shadow-sm cursor-pointer">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-50 text-slate-700">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+              </div>
+              <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">ESSENTIAL</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 group-hover:text-indigo-600">Merge PDFs</h3>
+              <p class="text-xs text-slate-500 mt-1">Combine multiple PDF files into a single document.</p>
+            </div>
+          </div>
+        </div>
+
+        <div onclick="selectTool('img2pdf')" data-cat="image" class="tool-card group relative flex flex-col justify-between rounded-xl border border-indigo-600 bg-white p-5 shadow-sm cursor-pointer ring-2 ring-indigo-600/10">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              </div>
+              <span class="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700">UPDATED QUEUE</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 group-hover:text-indigo-600">Images to PDF Queue</h3>
+              <p class="text-xs text-slate-500 mt-1">Multi-image queue with thumbnail grid reordering.</p>
+            </div>
+          </div>
+        </div>
+
+        <div onclick="selectTool('docx2pdf')" data-cat="converter" class="tool-card group relative flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 hover:border-slate-300 shadow-sm cursor-pointer">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-50 text-slate-700">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              </div>
+              <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">2-WAY</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 group-hover:text-indigo-600">Word to PDF</h3>
+              <p class="text-xs text-slate-500 mt-1">Convert .docx documents into PDF files.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workspace Panel -->
+      <div id="workspacePanel" class="rounded-2xl border border-slate-200 bg-white p-8 shadow-md space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div>
+            <h2 id="activeToolTitle" class="text-xl font-extrabold text-slate-900">Images to PDF Queue</h2>
+            <p id="activeToolDesc" class="text-xs text-slate-500 mt-0.5">Upload multiple image files, arrange page sequence in grid preview, and generate PDF.</p>
+          </div>
+          <span class="rounded bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">Universal Mobile & Desktop Download</span>
+        </div>
+
+        <!-- File Upload Drag Zone -->
+        <div id="dropZone" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" class="border-2 border-dashed border-slate-300 bg-slate-50/70 rounded-xl p-8 text-center cursor-pointer hover:border-indigo-600 hover:bg-indigo-50/30 transition-all">
+          <input type="file" id="fileInput" multiple class="hidden" onchange="handleFileSelect(event)">
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow border border-slate-200 mb-3">
+            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          </div>
+          <p class="text-sm font-semibold text-slate-800"><span class="text-indigo-600 underline">Select multiple images</span> or drag and drop files</p>
+          <p class="text-xs text-slate-400 font-mono mt-1">PNG, JPG, WebP images accepted (Select multiple simultaneously)</p>
+        </div>
+
+        <!-- Multi-Image Thumbnail Reordering Grid Container -->
+        <div id="thumbnailGridContainer" class="hidden space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">Page Sequence & Layout Grid (<span id="fileCountBadge">0</span> files)</span>
+            <button onclick="clearFiles()" class="text-xs font-semibold text-rose-600 hover:underline">Clear Queue</button>
+          </div>
+          <div id="thumbnailGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="pt-2">
+          <button id="processBtn" onclick="runProcess()" disabled class="w-full rounded-xl bg-slate-900 py-3.5 text-sm font-bold text-white opacity-50 cursor-not-allowed hover:bg-slate-800 transition-all shadow">
+            Generate Unified PDF Document
+          </button>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div id="progressBox" class="hidden space-y-2 text-center pt-2">
+          <div class="flex justify-between text-xs font-semibold text-slate-700">
+            <span id="progressText">Processing document streams...</span>
+            <span id="progressPercent" class="font-mono text-indigo-600">0%</span>
+          </div>
+          <div class="h-2 w-full rounded-full bg-slate-100 overflow-hidden border border-slate-200">
+            <div id="progressBar" class="h-full bg-indigo-600 transition-all duration-300 w-0"></div>
+          </div>
+        </div>
+
+        <!-- Result Download Box -->
+        <div id="resultBox" class="hidden rounded-xl border border-emerald-200 bg-emerald-50/60 p-6 space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-slate-900">Processing Complete!</h4>
+              <p id="resultDetails" class="text-xs text-slate-600">Document generated successfully in memory.</p>
+            </div>
+          </div>
+          <button id="downloadBtn" class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 py-3.5 text-sm font-bold text-white hover:bg-indigo-700 transition-colors shadow">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Download Output PDF Directly
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentTool = 'img2pdf';
+    let imageQueue = [];
+    let processedBlob = null;
+    let outputFileName = 'docuflow_images.pdf';
+
+    const toolMeta = {
+      img2pdf: { title: 'Images to PDF Queue', desc: 'Upload multiple image files, arrange page sequence in grid preview, and generate PDF.', btn: 'Generate Unified PDF Document' },
+      compress: { title: 'Compress PDF', desc: 'Reduce PDF document size using object stream optimization.', btn: 'Compress PDF Now' },
+      merge: { title: 'Merge PDFs', desc: 'Combine multiple PDF files into a single unified document.', btn: 'Merge PDFs Now' },
+      docx2pdf: { title: 'Word to PDF', desc: 'Convert Word (.docx) documents into clean PDF files.', btn: 'Convert Word to PDF' },
+    };
+
+    function selectTool(id) {
+      currentTool = id;
+      document.querySelectorAll('.tool-card').forEach(c => {
+        c.className = 'tool-card group relative flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5 hover:border-slate-300 shadow-sm cursor-pointer';
+      });
+      document.querySelector(`[onclick="selectTool('${id}')"]`).className = 'tool-card group relative flex flex-col justify-between rounded-xl border border-indigo-600 bg-white p-5 shadow-sm cursor-pointer ring-2 ring-indigo-600/10';
+
+      document.getElementById('activeToolTitle').innerText = toolMeta[id].title;
+      document.getElementById('activeToolDesc').innerText = toolMeta[id].desc;
+      document.getElementById('processBtn').innerText = toolMeta[id].btn;
+      clearFiles();
+    }
+
+    function handleDragOver(e) { e.preventDefault(); }
+    function handleDragLeave(e) { e.preventDefault(); }
+    function handleDrop(e) {
+      e.preventDefault();
+      if (e.dataTransfer.files.length) handleFiles(Array.from(e.dataTransfer.files));
+    }
+    function handleFileSelect(e) {
+      if (e.target.files.length) handleFiles(Array.from(e.target.files));
+    }
+
+    function handleFiles(files) {
+      const newItems = files.map(file => ({
+        file,
+        name: file.name,
+        size: file.size,
+        previewUrl: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
+        rotation: 0
+      }));
+
+      if (currentTool === 'img2pdf' || currentTool === 'merge') {
+        imageQueue = [...imageQueue, ...newItems];
+      } else {
+        imageQueue = [newItems[0]];
+      }
+
+      renderThumbnailGrid();
+    }
+
+    function moveLeft(index) {
+      if (index === 0) return;
+      const moved = imageQueue.splice(index, 1)[0];
+      imageQueue.splice(index - 1, 0, moved);
+      renderThumbnailGrid();
+    }
+
+    function moveRight(index) {
+      if (index === imageQueue.length - 1) return;
+      const moved = imageQueue.splice(index, 1)[0];
+      imageQueue.splice(index + 1, 0, moved);
+      renderThumbnailGrid();
+    }
+
+    function rotateItem(index) {
+      imageQueue[index].rotation = (imageQueue[index].rotation + 90) % 360;
+      renderThumbnailGrid();
+    }
+
+    function removeItem(index) {
+      if (imageQueue[index].previewUrl) URL.revokeObjectURL(imageQueue[index].previewUrl);
+      imageQueue.splice(index, 1);
+      renderThumbnailGrid();
+    }
+
+    function renderThumbnailGrid() {
+      const container = document.getElementById('thumbnailGridContainer');
+      const grid = document.getElementById('thumbnailGrid');
+      const countBadge = document.getElementById('fileCountBadge');
+      const btn = document.getElementById('processBtn');
+
+      countBadge.innerText = imageQueue.length;
+
+      if (!imageQueue.length) {
+        container.classList.add('hidden');
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+        return;
+      }
+
+      container.classList.remove('hidden');
+      btn.disabled = false;
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+      grid.innerHTML = imageQueue.map((item, i) => `
+        <div class="relative flex flex-col justify-between rounded-lg border border-slate-200 bg-slate-50 p-2.5 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <span class="rounded bg-indigo-600 px-2 py-0.5 text-[10px] font-bold text-white">Page ${i+1}</span>
+            <button onclick="removeItem(${i})" class="text-slate-400 hover:text-rose-600">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+
+          <div class="relative flex h-28 w-full items-center justify-center overflow-hidden rounded border border-slate-200 bg-white">
+            ${item.previewUrl
+              ? `<img src="${item.previewUrl}" class="h-full w-full object-contain" style="transform: rotate(${item.rotation}deg);" />`
+              : `<svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>`
+            }
+          </div>
+
+          <div class="mt-2 text-[11px] truncate font-semibold text-slate-800">${item.name}</div>
+
+          <div class="mt-2 flex items-center justify-between border-t border-slate-200 pt-2 bg-white rounded p-1">
+            <button onclick="moveLeft(${i})" ${i === 0 ? 'disabled class="opacity-30"' : 'class="hover:text-slate-900"'}>←</button>
+            <button onclick="rotateItem(${i})" class="text-indigo-600 font-bold hover:underline">↻ 90°</button>
+            <button onclick="moveRight(${i})" ${i === imageQueue.length - 1 ? 'disabled class="opacity-30"' : 'class="hover:text-slate-900"'}>→</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function clearFiles() {
+      imageQueue.forEach(item => { if (item.previewUrl) URL.revokeObjectURL(item.previewUrl); });
+      imageQueue = [];
+      document.getElementById('fileInput').value = '';
+      document.getElementById('resultBox').classList.add('hidden');
+      document.getElementById('progressBox').classList.add('hidden');
+      renderThumbnailGrid();
+    }
+
+    /**
+     * Universal Cross-Platform Download Handler
+     * Tied directly to user click gesture event stack.
+     */
+    function triggerUniversalDownload(blob, fileName) {
+      if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(blob, fileName);
+        return;
+      }
+
+      const userAgent = window.navigator.userAgent || '';
+      const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+      const isInAppWebView = /(FBAN|FBAV|Instagram|Line|Twitter|MicroMessenger)/i.test(userAgent);
+
+      const objectUrl = window.URL.createObjectURL(blob);
+
+      if (isInAppWebView) {
+        window.open(objectUrl, '_blank');
+        setTimeout(() => window.URL.revokeObjectURL(objectUrl), 10000);
+        return;
+      }
+
+      const link = document.createElement('a');
+      link.style.display = 'none';
+      link.style.position = 'absolute';
+      link.style.left = '-9999px';
+      link.href = objectUrl;
+      link.download = fileName;
+
+      if (isIOS) {
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+      }
+
+      document.body.appendChild(link);
+      
+      try {
+        link.click();
+      } catch (err) {
+        const clickEvent = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+        link.dispatchEvent(clickEvent);
+      }
+
+      setTimeout(() => {
+        if (document.body.contains(link)) document.body.removeChild(link);
+        window.URL.revokeObjectURL(objectUrl);
+      }, 3000);
+    }
+
+    async function runProcess() {
+      if (!imageQueue.length) return;
+
+      const pBox = document.getElementById('progressBox');
+      const pBar = document.getElementById('progressBar');
+      const pText = document.getElementById('progressText');
+      const pPercent = document.getElementById('progressPercent');
+      const resBox = document.getElementById('resultBox');
+
+      pBox.classList.remove('hidden');
+      resBox.classList.add('hidden');
+
+      pBar.style.width = '20%'; pPercent.innerText = '20%'; pText.innerText = 'Reading image queue array...';
+
+      try {
+        if (currentTool === 'img2pdf') {
+          pBar.style.width = '60%'; pPercent.innerText = '60%'; pText.innerText = 'Sequencing image pages into PDF document...';
+          const pdfDoc = await PDFLib.PDFDocument.create();
+          const A4_W = 595.28;
+          const A4_H = 841.89;
+          const margin = 20;
+
+          for (let item of imageQueue) {
+            const b = await item.file.arrayBuffer();
+            let img;
+            if (item.file.type.includes('png')) img = await pdfDoc.embedPng(b);
+            else img = await pdfDoc.embedJpg(b);
+
+            const page = pdfDoc.addPage([A4_W, A4_H]);
+            const maxW = A4_W - margin * 2;
+            const maxH = A4_H - margin * 2;
+            const dims = img.scaleToFit(maxW, maxH);
+
+            const x = margin + (maxW - dims.width) / 2;
+            const y = margin + (maxH - dims.height) / 2;
+
+            page.drawImage(img, {
+              x,
+              y,
+              width: dims.width,
+              height: dims.height,
+              rotate: item.rotation ? PDFLib.degrees(item.rotation) : PDFLib.degrees(0)
+            });
+          }
+
+          const pdfBytes = await pdfDoc.save();
+          processedBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+          outputFileName = `docuflow_images_${Date.now()}.pdf`;
+          document.getElementById('resultDetails').innerText = `Combined ${imageQueue.length} image(s) into unified PDF. (${(pdfBytes.byteLength/1024/1024).toFixed(2)} MB output)`;
+        } else if (currentTool === 'compress') {
+          pBar.style.width = '60%'; pPercent.innerText = '60%'; pText.innerText = 'Compressing stream dictionary...';
+          const buf = await imageQueue[0].file.arrayBuffer();
+          const pdfDoc = await PDFLib.PDFDocument.load(buf, { ignoreEncryption: true });
+          const newDoc = await PDFLib.PDFDocument.create();
+          const pages = await newDoc.copyPages(pdfDoc, pdfDoc.getPageIndices());
+          pages.forEach(p => newDoc.addPage(p));
+          const pdfBytes = await newDoc.save({ useObjectStreams: true });
+          processedBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+          outputFileName = imageQueue[0].name.replace('.pdf', '_compressed.pdf');
+          document.getElementById('resultDetails').innerText = `Reduced PDF size via object stream compression.`;
+        } else if (currentTool === 'merge') {
+          pBar.style.width = '60%'; pPercent.innerText = '60%'; pText.innerText = 'Merging PDF documents...';
+          const merged = await PDFLib.PDFDocument.create();
+          const A4_W = 595.28;
+          const A4_H = 841.89;
+          const margin = 20;
+
+          for (let item of imageQueue) {
+            const b = await item.file.arrayBuffer();
+            const doc = await PDFLib.PDFDocument.load(b, { ignoreEncryption: true });
+            const pgs = doc.getPageIndices();
+            for (let idx of pgs) {
+              const srcPg = doc.getPage(idx);
+              const embeddedPg = await merged.embedPage(srcPg);
+
+              const page = merged.addPage([A4_W, A4_H]);
+              const maxW = A4_W - margin * 2;
+              const maxH = A4_H - margin * 2;
+
+              const scale = Math.min(maxW / embeddedPg.width, maxH / embeddedPg.height);
+              const drawW = embeddedPg.width * scale;
+              const drawH = embeddedPg.height * scale;
+
+              const x = margin + (maxW - drawW) / 2;
+              const y = margin + (maxH - drawH) / 2;
+
+              page.drawPage(embeddedPg, {
+                x,
+                y,
+                width: drawW,
+                height: drawH,
+                rotate: item.rotation ? PDFLib.degrees(item.rotation) : PDFLib.degrees(0)
+              });
+            }
+          }
+          const pdfBytes = await merged.save({ useObjectStreams: true });
+          processedBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+          outputFileName = 'docuflow_merged.pdf';
+          document.getElementById('resultDetails').innerText = `Merged ${imageQueue.length} PDF files into one.`;
+        } else if (currentTool === 'docx2pdf') {
+          pBar.style.width = '60%'; pPercent.innerText = '60%'; pText.innerText = 'Parsing Word structure...';
+          const b = await imageQueue[0].file.arrayBuffer();
+          const res = await mammoth.extractRawText({ arrayBuffer: b });
+          const text = res.value || 'Converted document text';
+          const pdfDoc = await PDFLib.PDFDocument.create();
+          const page = pdfDoc.addPage([595.28, 841.89]);
+          page.drawText(text.slice(0, 1000), { x: 50, y: 780, size: 11 });
+          const pdfBytes = await pdfDoc.save();
+          processedBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+          outputFileName = imageQueue[0].name.replace('.docx', '.pdf');
+          document.getElementById('resultDetails').innerText = `Word document converted to PDF format.`;
+        }
+
+        pBar.style.width = '100%';
+        pPercent.innerText = '100%';
+        pText.innerText = 'Done!';
+
+        setTimeout(() => {
+          pBox.classList.add('hidden');
+          resBox.classList.remove('hidden');
+          document.getElementById('downloadBtn').onclick = () => {
+            triggerUniversalDownload(processedBlob, outputFileName);
+          };
+        }, 400);
+      } catch (err) {
+        alert('Processing error: ' + err.message);
+        pBox.classList.add('hidden');
+      }
+    }
+
+    function setCategory(cat) {
+      document.querySelectorAll('.category-tab').forEach(t => t.className = 'category-tab rounded-lg px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200/60');
+      document.getElementById('tab-' + cat).className = 'category-tab rounded-lg px-3.5 py-1.5 text-xs font-semibold bg-slate-900 text-white shadow-sm';
+
+      document.querySelectorAll('.tool-card').forEach(c => {
+        if (cat === 'all' || c.getAttribute('data-cat') === cat) c.classList.remove('hidden');
+        else c.classList.add('hidden');
+      });
+    }
+
+    function filterTools() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      document.querySelectorAll('.tool-card').forEach(c => {
+        const text = c.innerText.toLowerCase();
+        if (text.includes(q)) c.classList.remove('hidden');
+        else c.classList.add('hidden');
+      });
+    }
+  </script>
+</body>
+</html>
